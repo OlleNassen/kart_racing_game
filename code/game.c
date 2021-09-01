@@ -74,11 +74,6 @@ static void LoadShaders(game_state* GameState)
     GameState->ShaderBox = LoadAndCreateShaders(GameState, "assets/basic.vs", "assets/basic.fs");
 }
 
-static r32 DegreesToRadians(r32 Degrees)
-{
-    return (Degrees * Pi) / 180.f;
-}
-
 static void UpdateCamera(camera* Camera, s32 DeltaMouseX, s32 DeltaMouseY)
 {
     r32 MouseSensitivity = 1.f;
@@ -106,6 +101,17 @@ static void UpdateCamera(camera* Camera, s32 DeltaMouseX, s32 DeltaMouseY)
     glm_normalize(Camera->Up);
 }
 
+static void AddEntity(world* World, vec3 Position, entity_types Type)
+{
+    Assert(World->CurrentNumEntities < MAX_NUM_ENTITIES);
+    
+    entity* Entity = &World->Entities[World->CurrentNumEntities++];
+    Entity->Position[0] = Position[0];
+    Entity->Position[1] = Position[1];
+    Entity->Position[2] = Position[2];
+    Entity->Type = Type;
+}
+
 void RunGame()
 {
     game_state* GameState = calloc(1, sizeof(game_state));
@@ -127,7 +133,7 @@ void RunGame()
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
     
-    SDL_Window * Window = SDL_CreateWindow("Cart Racing!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GlobalWindowWidth, GlobalWindowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+    SDL_Window * Window = SDL_CreateWindow("Now this is Cart Racing!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GlobalWindowWidth, GlobalWindowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     SDL_GLContext Context = SDL_GL_CreateContext( Window );
     SDL_SetWindowGrab(Window, 1);
     SDL_SetRelativeMouseMode(1);
@@ -150,13 +156,19 @@ void RunGame()
     LoadBox(GameState);
     LoadShaders(GameState);
     
-    glm_perspective(1.5707f, 16.0f / 9.0f, 0.01f, 1000.0f, GameState->MatrixProjection);
+    glm_perspective(Pi / 4, 16.0f / 9.0f, 0.01f, 1000.0f, GameState->MatrixProjection);
     
+    GameState->Camera.Yaw = -90.f;
     GameState->Camera.Position[2] = 4.f;
     GameState->Camera.Forward[2] = -1.f;
     GameState->Camera.Right[0] = 1.f;
     GameState->Camera.Up[1] = 1.f;
     GameState->Camera.WorldUp[1] = 1.f;
+    
+    vec3 EntityPosition = {0.f, 0.f, 0.f};
+    AddEntity(&GameState->World, EntityPosition, Kart);
+    glm_vec3_one(EntityPosition);
+    AddEntity(&GameState->World, EntityPosition, Kart);
     
     s32 IsRunning = 1;
     
@@ -164,6 +176,8 @@ void RunGame()
     {
         s32 MouseDeltaX = 0;
         s32 MouseDeltaY = 0;
+        
+        //Input pass
         
         SDL_Event EventType;
         while( SDL_PollEvent( &EventType ) )
@@ -215,27 +229,43 @@ void RunGame()
             }
         }
         
+        //Update pass
+        
         UpdateCamera(&GameState->Camera, MouseDeltaX, MouseDeltaY);
+        
+        //Rendering pass
+        
+        glClearColor(1.0f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
         
         vec3 Center;
         glm_vec3_add(GameState->Camera.Position, GameState->Camera.Forward, Center);
         glm_lookat(GameState->Camera.Position, Center, GameState->Camera.Up, GameState->MatrixView);
         
-        glClearColor(1.0f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        
         glUseProgram(GameState->ShaderBox);
-        
-        mat4 MatrixModel;
-        glm_mat4_identity(MatrixModel);
-        
-        glUniformMatrix4fv(0, 1, GL_FALSE, &MatrixModel[0][0]);
         glUniformMatrix4fv(1, 1, GL_FALSE, &GameState->MatrixView[0][0]);
         glUniformMatrix4fv(2, 1, GL_FALSE, &GameState->MatrixProjection[0][0]);
         
-        glBindVertexArray(GameState->VAOBox);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
+        for(u32 EntityIndex = 0; EntityIndex < GameState->World.CurrentNumEntities; ++EntityIndex)
+        {
+            mat4 MatrixModel;
+            glm_mat4_identity(MatrixModel);
+            
+            entity* Entity = GameState->World.Entities + EntityIndex;
+            MatrixModel[3][0] = Entity->Position[0];
+            MatrixModel[3][1] = Entity->Position[1];
+            MatrixModel[3][2] = Entity->Position[2];
+            glUniformMatrix4fv(0, 1, GL_FALSE, &MatrixModel[0][0]);
+            
+            switch(Entity->Type)
+            {
+                case Kart:
+                glBindVertexArray(GameState->VAOBox);
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+                glBindVertexArray(0);
+                break;
+            }
+        }
         
         SDL_GL_SwapWindow(Window);
     }
