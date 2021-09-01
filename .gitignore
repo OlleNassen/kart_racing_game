@@ -4,6 +4,9 @@
 # Build files
 *.bat
 
+# Editor files
+*.4coder
+
 # Object files
 *.o
 *.ko
