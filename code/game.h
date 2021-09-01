@@ -1,10 +1,15 @@
 #ifndef GAME_H
 #define GAME_H
 #include <glad.c>
+#include <SDL.h>
 #include <cglm.h>
 #include "common.h"
 
 #define MAX_NUM_ENTITIES 1444
+
+static s32 GlobalWindowWidth = 1280;
+static s32 GlobalWindowHeight = 720;
+static b32 GlobalIsRunning = 1;
 
 //Already defined in cglm?
 //enum {false = 0, true = 1};
@@ -49,6 +54,9 @@ typedef struct game_state
     mat4 MatrixView;
     camera Camera;
     world World;
+    
+    s32 MouseDeltaX;
+    s32 MouseDeltaY;
 }game_state;
 
 #endif //GAME_H
