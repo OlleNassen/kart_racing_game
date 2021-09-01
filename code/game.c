@@ -51,8 +51,4 @@ void RunGame()
         
         SDL_GL_SwapWindow(Window);
     }
-    
-    SDL_GL_DeleteContext( Context );
-    SDL_DestroyWindow( Window );
-    SDL_Quit();
 }
