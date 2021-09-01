@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+# Build files
+*.bat
+
 # Object files
 *.o
 *.ko
