@@ -56,3 +56,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+build/.vs/main/v16/.suo
+build/.vs/main/v16/Browse.VC.db
+build/.vs/main/v16/Browse.VC.db-shm
+build/.vs/main/v16/Browse.VC.db-wal
+build/.vs/main/v16/Browse.VC.opendb
+build/.vs/main/v16/ipch/AutoPCH/21600f1a13b7fd14/GAME.ipch
+build/.vs/main/v16/ipch/AutoPCH/59bdc5977b9068ee/GAME.ipch
