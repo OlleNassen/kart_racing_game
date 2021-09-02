@@ -30,6 +30,26 @@ typedef struct camera
 
 typedef enum entity_types{Kart, Tree, Cloud}entity_types;
 
+typedef struct game_button
+{
+    s16 Pressed;
+    s16 Released;
+    b32 Down;
+} game_button;
+
+typedef struct game_input
+{
+    game_button Select;
+    game_button Cancel;
+    
+    game_button Up;
+    game_button Down;
+    game_button Left;
+    game_button Right;
+    
+    game_button Pause;
+} game_input;
+
 typedef struct entity
 {
     entity_types Type;
@@ -57,6 +77,9 @@ typedef struct game_state
     
     s32 MouseDeltaX;
     s32 MouseDeltaY;
+    
+    game_input Players[4];
+    
 }game_state;
 
 typedef struct game_options
