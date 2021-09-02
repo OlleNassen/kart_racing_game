@@ -59,4 +59,11 @@ typedef struct game_state
     s32 MouseDeltaY;
 }game_state;
 
+typedef struct game_options
+{
+    s64 ResX;
+    s64 ResY;
+    
+} game_options;
+
 #endif //GAME_H

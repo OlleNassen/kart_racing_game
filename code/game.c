@@ -2,6 +2,51 @@
 #include "shader.c"
 #include "rendering.c"
 #include "input.c"
+#include "parser.h"
+
+static game_options LoadOptions(const char* Path)
+{
+    FILE* File = 0;
+    File = fopen(Path, "r");
+    if(!File)
+    {
+        printf("Failed to open path: %s", Path);
+    }
+    
+    fseek (File , 0 , SEEK_END);
+    long FileSize = ftell(File);
+    rewind (File);
+    
+    char Buffer[10000] = {0};
+    fread(Buffer, 1, FileSize, File);
+    fclose(File);
+    
+    
+    game_options Options = {0};
+    ini_parser Parser = {0};
+    Parser.At = Buffer;
+    
+    while (Next(&Parser))
+    {
+        if (StringEquals("Settings", &Parser.Section))
+        {
+            if (StringEquals("ResX", &Parser.Key))
+            {
+                Options.ResX = ToInt64(&Parser.Value);
+            }
+            else if (StringEquals("ResY", &Parser.Key))
+            {
+                Options.ResY = ToInt64(&Parser.Value);
+            }
+        }
+        else if (StringEquals("Player1", &Parser.Section))
+        {
+            
+        }
+    }
+    
+    return Options;
+}
 
 static void UpdateCamera(camera* Camera, s32 DeltaMouseX, s32 DeltaMouseY)
 {
@@ -49,6 +94,11 @@ void RunGame()
         printf("Failed to allocate memory\n");
         exit(1);
     }
+    
+    game_options Options = LoadOptions("assets/options.ini");
+    
+    GlobalWindowWidth = (s32)Options.ResX;
+    GlobalWindowHeight = (s32)Options.ResY;
     
     SDL_Init( SDL_INIT_VIDEO );
     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
