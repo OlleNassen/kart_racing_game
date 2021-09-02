@@ -1,7 +1,7 @@
 #include "game.h"
-#include "shader.c"
-#include "rendering.c"
-#include "input.c"
+#include "shader.cpp"
+#include "rendering.cpp"
+#include "input.cpp"
 #include "parser.h"
 
 static game_options LoadOptions(const char* Path)
@@ -63,16 +63,16 @@ static void UpdateCamera(camera* Camera, s32 DeltaMouseX, s32 DeltaMouseY)
     if (Camera->Pitch < -89.0f)
         Camera->Pitch = -89.0f;
     
-    Camera->Forward[0] = (r32)cos(DegreesToRadians(Camera->Yaw)) * (r32)cos(DegreesToRadians(Camera->Pitch));
-    Camera->Forward[1] = (r32)sin(DegreesToRadians(Camera->Pitch));
-    Camera->Forward[2] = (r32)sin(DegreesToRadians(Camera->Yaw)) * (r32)cos(DegreesToRadians(Camera->Pitch));
-    glm_normalize(Camera->Forward);
+    Camera->Forward.x = (r32)cos(DegreesToRadians(Camera->Yaw)) * (r32)cos(DegreesToRadians(Camera->Pitch));
+    Camera->Forward.y = (r32)sin(DegreesToRadians(Camera->Pitch));
+    Camera->Forward.z = (r32)sin(DegreesToRadians(Camera->Yaw)) * (r32)cos(DegreesToRadians(Camera->Pitch));
+    Camera->Forward = normalize(Camera->Forward);
     
-    glm_cross(Camera->Forward, Camera->WorldUp, Camera->Right);
-    glm_normalize(Camera->Right);
+    Camera->Right = cross(Camera->Forward, Camera->WorldUp);
+    Camera->Right = normalize(Camera->Right);
     
-    glm_cross(Camera->Right, Camera->Forward, Camera->Up);
-    glm_normalize(Camera->Up);
+    Camera->Up = cross(Camera->Right, Camera->Forward);
+    Camera->Up = normalize(Camera->Up);
 }
 
 static void AddEntity(world* World, vec3 Position, entity_types Type)
@@ -88,7 +88,7 @@ static void AddEntity(world* World, vec3 Position, entity_types Type)
 
 void RunGame()
 {
-    game_state* GameState = calloc(1, sizeof(game_state));
+    game_state* GameState = (game_state*)calloc(1, sizeof(game_state));
     if(!GameState)
     {
         printf("Failed to allocate memory\n");
@@ -114,8 +114,8 @@ void RunGame()
     
     SDL_Window * Window = SDL_CreateWindow("Now this is Cart Racing!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GlobalWindowWidth, GlobalWindowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     SDL_GLContext Context = SDL_GL_CreateContext( Window );
-    SDL_SetWindowGrab(Window, 1);
-    SDL_SetRelativeMouseMode(1);
+    SDL_SetWindowGrab(Window, SDL_TRUE);
+    SDL_SetRelativeMouseMode(SDL_TRUE);
     
     // Load GL extensions using glad
     if (gladLoadGL())
@@ -135,7 +135,7 @@ void RunGame()
     LoadBox(GameState);
     LoadShaders(GameState);
     
-    glm_perspective(Pi / 4, 16.0f / 9.0f, 0.01f, 1000.0f, GameState->MatrixProjection);
+    GameState->MatrixProjection = glm::perspective(Pi / 4, 16.0f / 9.0f, 0.01f, 1000.0f);
     
     GameState->Camera.Yaw = -90.f;
     GameState->Camera.Position[2] = 4.f;
@@ -146,7 +146,8 @@ void RunGame()
     
     vec3 EntityPosition = {0.f, 0.f, 0.f};
     AddEntity(&GameState->World, EntityPosition, Kart);
-    glm_vec3_one(EntityPosition);
+    
+    EntityPosition = {1.f, 1.f, 1.f};
     AddEntity(&GameState->World, EntityPosition, Kart);
     
     while(GlobalIsRunning)

@@ -80,27 +80,24 @@ static void HandleInput(game_state* GameState)
                     
                     case SDLK_w:
                     GameState->Players[0].Up = Pressed(GameState->Players[0].Up);
-                    glm_vec3_add(GameState->Camera.Position, GameState->Camera.Forward, GameState->Camera.Position);
+                    GameState->Camera.Position += GameState->Camera.Forward;
                     break;
                     
                     case SDLK_s:
                     {
                         GameState->Players[0].Down = Pressed(GameState->Players[0].Down);
-                        vec3 Backwards;
-                        glm_vec3_negate_to(GameState->Camera.Forward, Backwards);
-                        glm_vec3_add(GameState->Camera.Position, Backwards, GameState->Camera.Position);
+                        
+                        GameState->Camera.Position -= GameState->Camera.Forward;
                     }break;
                     case SDLK_a:
                     {
                         GameState->Players[0].Left = Pressed(GameState->Players[0].Left);
-                        vec3 Left;
-                        glm_vec3_negate_to(GameState->Camera.Right, Left);
-                        glm_vec3_add(GameState->Camera.Position, Left, GameState->Camera.Position);
+                        GameState->Camera.Position -= GameState->Camera.Right;
                     }break;
                     
                     case SDLK_d:
                     GameState->Players[0].Right = Pressed(GameState->Players[0].Right);
-                    glm_vec3_add(GameState->Camera.Position, GameState->Camera.Right, GameState->Camera.Position);
+                    GameState->Camera.Position += GameState->Camera.Right;
                     break;
                 }
             }break;
@@ -124,27 +121,19 @@ static void HandleInput(game_state* GameState)
                     
                     case SDLK_w:
                     GameState->Players[0].Up = Released(GameState->Players[0].Up);
-                    glm_vec3_add(GameState->Camera.Position, GameState->Camera.Forward, GameState->Camera.Position);
                     break;
                     
                     case SDLK_s:
                     {
                         GameState->Players[0].Down = Released(GameState->Players[0].Down);
-                        vec3 Backwards;
-                        glm_vec3_negate_to(GameState->Camera.Forward, Backwards);
-                        glm_vec3_add(GameState->Camera.Position, Backwards, GameState->Camera.Position);
                     }break;
                     case SDLK_a:
                     {
                         GameState->Players[0].Left = Released(GameState->Players[0].Left);
-                        vec3 Left;
-                        glm_vec3_negate_to(GameState->Camera.Right, Left);
-                        glm_vec3_add(GameState->Camera.Position, Left, GameState->Camera.Position);
                     }break;
                     
                     case SDLK_d:
                     GameState->Players[0].Right = Released(GameState->Players[0].Right);
-                    glm_vec3_add(GameState->Camera.Position, GameState->Camera.Right, GameState->Camera.Position);
                     break;
                 }
             }break;

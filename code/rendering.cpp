@@ -70,9 +70,7 @@ static void Render(game_state* GameState, SDL_Window* Window)
     glClearColor(1.0f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    vec3 Center;
-    glm_vec3_add(GameState->Camera.Position, GameState->Camera.Forward, Center);
-    glm_lookat(GameState->Camera.Position, Center, GameState->Camera.Up, GameState->MatrixView);
+    GameState->MatrixView = glm::lookAt(GameState->Camera.Position, GameState->Camera.Position + GameState->Camera.Forward, GameState->Camera.Up);
     
     glUseProgram(GameState->ShaderBox);
     glUniformMatrix4fv(1, 1, GL_FALSE, &GameState->MatrixView[0][0]);
@@ -80,8 +78,7 @@ static void Render(game_state* GameState, SDL_Window* Window)
     
     for(u32 EntityIndex = 0; EntityIndex < GameState->World.CurrentNumEntities; ++EntityIndex)
     {
-        mat4 MatrixModel;
-        glm_mat4_identity(MatrixModel);
+        mat4 MatrixModel(1.f);
         
         entity* Entity = GameState->World.Entities + EntityIndex;
         MatrixModel[3][0] = Entity->Position[0];

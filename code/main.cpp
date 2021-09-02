@@ -1,6 +1,6 @@
-#include "game.c"
-#include "parser.c"
-#include "kart.c"
+#include "game.cpp"
+#include "parser.cpp"
+#include "kart.cpp"
 
 int main( int argc, char* argv[] )
 {

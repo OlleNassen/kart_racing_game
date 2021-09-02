@@ -2,7 +2,8 @@
 #define GAME_H
 #include <glad.c>
 #include <SDL.h>
-#include <cglm.h>
+#include <glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "common.h"
 #include "kart.h"
 
@@ -12,8 +13,13 @@ static s32 GlobalWindowWidth = 1280;
 static s32 GlobalWindowHeight = 720;
 static b32 GlobalIsRunning = 1;
 
-//Already defined in cglm?
-//enum {false = 0, true = 1};
+typedef glm::vec3 vec3;
+typedef glm::mat4 mat4;
+
+using glm::lookAt;
+using glm::normalize;
+using glm::cross;
+using glm::dot;
 
 void GameRun();
 
