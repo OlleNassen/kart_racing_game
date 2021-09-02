@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <cglm.h>
 #include "common.h"
+#include "kart.h"
 
 #define MAX_NUM_ENTITIES 1444
 
@@ -50,12 +51,15 @@ typedef struct game_input
     game_button Pause;
 } game_input;
 
+
+
 typedef struct entity
 {
     entity_types Type;
     vec3 Position;
     vec3 Velocity;
     vec3 Acceleration;
+    kart Kart;
 }entity;
 
 typedef struct world
