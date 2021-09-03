@@ -99,7 +99,7 @@ struct game_options
 {
     s64 ResX;
     s64 ResY;
-    
+    s64 FPS;
 };
 
 #endif //GAME_H
