@@ -23,7 +23,7 @@ using glm::dot;
 
 void GameRun();
 
-typedef struct camera
+struct camera
 {
     vec3 Position;
     vec3 Forward;
@@ -33,18 +33,21 @@ typedef struct camera
     // NOTE(Olle Nässén): IN DEGREES
     r32 Pitch;
     r32 Yaw;
-}camera;
+};
 
-typedef enum entity_types{Kart, Tree, Cloud}entity_types;
+enum entity_types : u32
+{
+    Kart, Tree, Cloud
+};
 
-typedef struct game_button
+struct game_button
 {
     s16 Pressed;
     s16 Released;
     b32 Down;
-} game_button;
+};
 
-typedef struct game_input
+struct game_input
 {
     game_button Select;
     game_button Cancel;
@@ -55,26 +58,26 @@ typedef struct game_input
     game_button Right;
     
     game_button Pause;
-} game_input;
+};
 
 
 
-typedef struct entity
+struct entity
 {
     entity_types Type;
     vec3 Position;
     vec3 Velocity;
     vec3 Acceleration;
-    kart Kart;
-}entity;
+    kart_type Kart;
+};
 
-typedef struct world
+struct world
 {
     entity Entities[MAX_NUM_ENTITIES];
     u32 CurrentNumEntities;
-}world;
+};
 
-typedef struct game_state
+struct game_state
 {
     GLuint VAOBox;
     GLuint VBOBox;
@@ -90,13 +93,13 @@ typedef struct game_state
     
     game_input Players[4];
     
-}game_state;
+};
 
-typedef struct game_options
+struct game_options
 {
     s64 ResX;
     s64 ResY;
     
-} game_options;
+};
 
 #endif //GAME_H

@@ -1,3 +1,6 @@
+#define CGLTF_IMPLEMENTATION
+#include "cgltf.h"
+
 #include "game.cpp"
 #include "parser.cpp"
 #include "kart.cpp"

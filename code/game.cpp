@@ -4,6 +4,38 @@
 #include "input.cpp"
 #include "parser.h"
 
+static void LoadScene(const char* Path)
+{
+    cgltf_options Options = {0};
+    cgltf_data* Data = 0;
+    cgltf_result Result = cgltf_parse_file(&Options, Path, &Data);
+    
+    if (Result == cgltf_result_success)
+    {
+        /* TODO make awesome stuff */
+        
+        for (s64 I = 0; I < (s64)Data->buffers_count; ++I)
+        {
+            cgltf_buffer* Buffer = Data->buffers + I;
+        }
+        
+        for (s64 I = 0; I < (s64)Data->images_count; ++I)
+        {
+            cgltf_image* Image = Data->images + I;
+        }
+        
+        
+        for (s64 I = 0; I < (s64)Data->meshes_count; ++I)
+        {
+            cgltf_mesh* Mesh = Data->meshes + I;
+        }
+        
+        cgltf_free(Data);
+    }
+    
+    
+}
+
 static game_options LoadOptions(const char* Path)
 {
     FILE* File = 0;
@@ -96,6 +128,8 @@ void RunGame()
     }
     
     game_options Options = LoadOptions("assets/options.ini");
+    
+    LoadScene("assets/scene.glb");
     
     GlobalWindowWidth = (s32)Options.ResX;
     GlobalWindowHeight = (s32)Options.ResY;

@@ -1,32 +1,49 @@
+#include "kart.h"
 #include "game.h"
 
-static void Break(world* World, kart* Kart)
+static kart CreateKart(u32 Model, r32 MaxVel, r32 TurnSpeed)
+{
+    kart Result = {};
+    return Result;
+}
+
+static const kart Karts[kart_type::Count] = 
+{
+    CreateKart(0, 5.0f, 1.0f),
+    CreateKart(0, 8.0f, 0.8f),
+};
+
+static void Break(world* World, entity* Ent)
+{
+    const kart* Kart = &Karts[(u32)Ent->Kart];
+    
+}
+
+static void Accelerate(world* World, entity* Ent)
+{
+    const kart* Kart = &Karts[(u32)Ent->Kart];
+    
+}
+
+static void Turn(world* World, entity* Ent)
+{
+    const kart* Kart = &Karts[(u32)Ent->Kart];
+    
+}
+
+static void Slide(world* World, entity* Ent)
+{
+    const kart* Kart = &Karts[(u32)Ent->Kart];
+    
+}
+
+
+static void GivePowerUp(world* World, entity* Ent, power_up PowerUp)
 {
     
 }
 
-static void Accelerate(world* World, kart* Kart, r32 Velocity)
-{
-    
-}
-
-static void Turn(world* World, kart* Kart, r32 RotationAmount)
-{
-    
-}
-
-static void Slide(world* World, kart* Kart)
-{
-    
-}
-
-
-static void GivePowerUp(world* World, kart* Kart, power_up PowerUp)
-{
-    
-}
-
-static void UsePowerUp(world* World, kart* Kart)
+static void UsePowerUp(world* World, entity* Ent)
 {
     
 }
