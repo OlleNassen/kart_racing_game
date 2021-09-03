@@ -189,6 +189,23 @@ void RunGame()
         //Input pass
         HandleInput(GameState);
         
+        if (GameState->Players[0].Up.Down)
+        {
+            GameState->Camera.Position += GameState->Camera.Forward;
+        }
+        if (GameState->Players[0].Down.Down)
+        {
+            GameState->Camera.Position -= GameState->Camera.Forward;
+        }
+        if (GameState->Players[0].Left.Down)
+        {
+            GameState->Camera.Position -= GameState->Camera.Right;
+        }
+        if (GameState->Players[0].Right.Down)
+        {
+            GameState->Camera.Position += GameState->Camera.Right;
+        }
+        
         //Update stuff
         UpdateCamera(&GameState->Camera, GameState->MouseDeltaX, GameState->MouseDeltaY);
         

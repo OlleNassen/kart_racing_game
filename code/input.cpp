@@ -80,24 +80,20 @@ static void HandleInput(game_state* GameState)
                     
                     case SDLK_w:
                     GameState->Players[0].Up = Pressed(GameState->Players[0].Up);
-                    GameState->Camera.Position += GameState->Camera.Forward;
                     break;
                     
                     case SDLK_s:
                     {
                         GameState->Players[0].Down = Pressed(GameState->Players[0].Down);
-                        
-                        GameState->Camera.Position -= GameState->Camera.Forward;
                     }break;
                     case SDLK_a:
                     {
                         GameState->Players[0].Left = Pressed(GameState->Players[0].Left);
-                        GameState->Camera.Position -= GameState->Camera.Right;
                     }break;
                     
                     case SDLK_d:
                     GameState->Players[0].Right = Pressed(GameState->Players[0].Right);
-                    GameState->Camera.Position += GameState->Camera.Right;
+                    
                     break;
                 }
             }break;
