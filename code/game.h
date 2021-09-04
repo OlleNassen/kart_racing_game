@@ -57,7 +57,7 @@ typedef struct entity
     vec3 Velocity;
     vec3 Acceleration;
     obb Obb;
-    kart Kart;
+    kart_type Kart;
 }entity;
 
 typedef struct world
@@ -88,7 +88,7 @@ typedef struct game_options
 {
     s64 ResX;
     s64 ResY;
-    
+    s64 FPS;
 } game_options;
 
 #endif //GAME_H
