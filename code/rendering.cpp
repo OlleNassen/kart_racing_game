@@ -65,7 +65,13 @@ static void LoadBox(game_state* GameState)
     
     glGenBuffers(1, &GameState->TerrainVBO);
     glBindBuffer(GL_ARRAY_BUFFER, GameState->TerrainVBO);
-    MeshUpdateBuffers(&GameState->TerrainMesh, GameState->TerrainVAO, GameState->TerrainVBO);
+    
+    glGenBuffers(1, &GameState->TerrainEBO);
+    glBindBuffer(GL_ARRAY_BUFFER, GameState->TerrainEBO);
+    
+    MeshHeightmapFromImage(&GameState->TerrainMesh, "assets/heightmap.png");
+    MeshUpdateBuffers(&GameState->TerrainMesh, 
+                      GameState->TerrainVAO, GameState->TerrainVBO, GameState->TerrainEBO);
 }
 
 static void LoadShaders(game_state* GameState)
@@ -80,6 +86,20 @@ static void Render(game_state* GameState, SDL_Window* Window)
     glClear(GL_COLOR_BUFFER_BIT);
     
     GameState->MatrixView = glm::lookAt(GameState->Camera.Position, GameState->Camera.Position + GameState->Camera.Forward, GameState->Camera.Up);
+    
+    
+    {
+        glUseProgram(GameState->TerrainShader);
+        glUniformMatrix4fv(1, 1, GL_FALSE, &GameState->MatrixView[0][0]);
+        glUniformMatrix4fv(2, 1, GL_FALSE, &GameState->MatrixProjection[0][0]);
+        
+        mat4 MatrixModel(1.f);
+        glUniformMatrix4fv(0, 1, GL_FALSE, &MatrixModel[0][0]);
+        
+        glBindVertexArray(GameState->TerrainVAO);
+        glDrawElements(GL_TRIANGLES, GameState->TerrainMesh.NumIndices, GL_UNSIGNED_INT, 0);
+        //glDrawArrays(GL_TRIANGLES, 0, GameState->TerrainMesh.NumVertices);
+    }
     
     glUseProgram(GameState->ShaderBox);
     glUniformMatrix4fv(1, 1, GL_FALSE, &GameState->MatrixView[0][0]);

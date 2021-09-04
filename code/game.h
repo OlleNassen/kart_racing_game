@@ -75,6 +75,7 @@ typedef struct game_state
     
     GLuint TerrainVAO;
     GLuint TerrainVBO;
+    GLuint TerrainEBO;
     GLuint TerrainShader;
     mesh TerrainMesh;
     

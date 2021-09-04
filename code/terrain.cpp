@@ -94,13 +94,17 @@ static void MeshEmpty(mesh *Mesh, int Width, int Height)
 	free(Data);
 }
 
-static void MeshUpdateBuffers(mesh *Mesh, unsigned int VAO, unsigned int VBO)
+static void MeshUpdateBuffers(mesh *Mesh, unsigned int VAO, unsigned int VBO, unsigned int EBO)
 {
     s64 NumVertices = Mesh->NumVertices;
 	s64 NumVertices3 = NumVertices * sizeof(vec3);
 	s64 NumVertices2 =  NumVertices * sizeof(vec2);
 	
 	glBindVertexArray(VAO);
+    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, Mesh->NumIndices * sizeof(u32), Mesh->Indices, GL_STATIC_DRAW);
+    
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, NumVertices3 * 2 +
                  NumVertices2, 0, GL_STATIC_DRAW);
@@ -115,6 +119,8 @@ static void MeshUpdateBuffers(mesh *Mesh, unsigned int VAO, unsigned int VBO)
     glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
+    
+    
 }
 
 
