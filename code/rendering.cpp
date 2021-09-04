@@ -129,6 +129,8 @@ static void Render(game_state* GameState, SDL_Window* Window)
         mat4 MatrixModel(1.f);
         glUniformMatrix4fv(0, 1, GL_FALSE, &MatrixModel[0][0]);
         
+        glBindTexture(GL_TEXTURE_2D, GameState->TerrainTexture);
+        
         glBindVertexArray(GameState->TerrainVAO);
         glDrawElements(GL_TRIANGLES, GameState->TerrainMesh.NumIndices, GL_UNSIGNED_INT, 0);
         //glDrawArrays(GL_TRIANGLES, 0, GameState->TerrainMesh.NumVertices);
