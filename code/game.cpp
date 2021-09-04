@@ -223,11 +223,10 @@ void RunGame()
     AddEntity(&GameState->World, vec3(0,0,0), Kart);
     AddEntity(&GameState->World, vec3(0,1,0.9f), Kart);
     
-    
-    s64 LogicUpdateCount = 480;
-    s64 StepCount = LogicUpdateCount / Options.FPS;
-    r64 FullStep = 0.0;
-    r64 SmallStep = 0.0;
+    const s64 LogicUpdateCount = 480;
+    const s64 StepCount = LogicUpdateCount / Options.FPS;
+    const r64 FullStep = (r64)Options.FPS / (r64)LogicUpdateCount;
+    const r64 SmallStep = (r64)(LogicUpdateCount % Options.FPS) / (r64)LogicUpdateCount;
     
     while(GlobalIsRunning)
     {
