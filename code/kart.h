@@ -1,24 +1,36 @@
+#ifndef KART_H
+#define KART_H
+
 #include "common.h"
 
 struct world;
+struct entity;
 
-typedef struct kart
+enum struct power_up : u32
+{
+    None,
+    
+};
+
+struct kart
 {
     r32 Speed;
     r32 Rotation;
-    u32 PowerUp;
-    
-} kart;
+    power_up PowerUp;
+};
 
-typedef enum power_up
+enum struct kart_type : u32
 {
-    PowerNone,
-    
-} power_up;
+    Default,
+    Cool,
+    Count
+};
 
-static void Break(struct world* World, kart* Kart);
-static void Accelerate(struct world* World, kart* Kart, r32 Velocity);
-static void Turn(struct world* World, kart* Kart, r32 RotationAmount);
-static void Slide(struct world* World, kart* Kart);
-static void GivePowerUp(struct world* World, kart* Kart, power_up PowerUp);
-static void UsePowerUp(struct world* World, kart* Kart);
+static void Break(world* World, entity* Ent);
+static void Accelerate(world* World, entity* Ent);
+static void Turn(world* World, entity* Ent);
+static void Slide(world* World, entity* Ent);
+static void GivePowerUp(world* World, entity* Ent, power_up PowerUp);
+static void UsePowerUp(world* World, entity* Ent);
+
+#endif

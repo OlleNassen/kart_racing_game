@@ -5,6 +5,63 @@
 #include "parser.h"
 #include "physics.cpp"
 
+static void LoadScene(const char* Path)
+{
+    cgltf_options Options = {0};
+    cgltf_data* Data = 0;
+    cgltf_result Result = cgltf_parse_file(&Options, Path, &Data);
+    
+    if (Result == cgltf_result_success)
+    {
+        /* TODO make awesome stuff */
+        
+        for (s64 I = 0; I < (s64)Data->meshes_count; ++I)
+        {
+            cgltf_mesh* Mesh = Data->meshes + I;
+            
+            for (s64 J = 0; J < (s64)Mesh->primitives_count; ++J)
+            {
+                cgltf_primitive* Primitive = Mesh->primitives + J;
+                
+                for (s64 K = 0; K < (s64)Primitive->attributes_count; ++K)
+                {
+                    cgltf_attribute* Attribute = Primitive->attributes + K;
+                    cgltf_accessor* Accessor = Attribute->data;
+                    cgltf_buffer_view* BufferView = Accessor->buffer_view;
+                    s64 BufferSize = BufferView->size;
+                    cgltf_buffer* Buffer = BufferView->buffer;
+                    
+                    switch (Attribute->type)
+                    {
+                        case cgltf_attribute_type_position:
+                        {
+                            
+                            
+                            break;
+                        }
+                        case cgltf_attribute_type_normal:
+                        {
+                            break;
+                        }
+                    }
+                }
+                
+                {
+                    cgltf_accessor* Accessor = Primitive->indices;
+                    cgltf_buffer_view* BufferView = Accessor->buffer_view;
+                    s64 BufferSize = BufferView->size;
+                    cgltf_buffer* Buffer = BufferView->buffer;
+                    
+                }
+            }
+            
+            
+            
+            cgltf_free(Data);
+        }
+    }
+}
+
 static game_options LoadOptions(const char* Path)
 {
     FILE* File = 0;
@@ -38,6 +95,10 @@ static game_options LoadOptions(const char* Path)
             else if (StringEquals("ResY", &Parser.Key))
             {
                 Options.ResY = ToInt64(&Parser.Value);
+            }
+            else if (StringEquals("FPS", &Parser.Key))
+            {
+                Options.FPS = ToInt64(&Parser.Value);
             }
         }
         else if (StringEquals("Player1", &Parser.Section))
@@ -94,6 +155,11 @@ static void AddEntity(world* World, vec3 Position, entity_types Type)
     Entity->Type = Type;
 }
 
+static void LogicUpdate(game_state* GameState, r64 Timestep)
+{
+    
+}
+
 void RunGame()
 {
     game_state* GameState = (game_state*)calloc(1, sizeof(game_state));
@@ -104,6 +170,8 @@ void RunGame()
     }
     
     game_options Options = LoadOptions("assets/options.ini");
+    
+    LoadScene("assets/scene.glb");
     
     GlobalWindowWidth = (s32)Options.ResX;
     GlobalWindowHeight = (s32)Options.ResY;
@@ -155,10 +223,39 @@ void RunGame()
     AddEntity(&GameState->World, vec3(0,0,0), Kart);
     AddEntity(&GameState->World, vec3(0,1,0.9f), Kart);
     
+    
+    s64 LogicUpdateCount = 480;
+    s64 StepCount = LogicUpdateCount / Options.FPS;
+    r64 FullStep = 0.0;
+    r64 SmallStep = 0.0;
+    
     while(GlobalIsRunning)
     {
         //Input pass
         HandleInput(GameState);
+        
+        if (GameState->Players[0].Up.Down)
+        {
+            GameState->Camera.Position += GameState->Camera.Forward;
+        }
+        if (GameState->Players[0].Down.Down)
+        {
+            GameState->Camera.Position -= GameState->Camera.Forward;
+        }
+        if (GameState->Players[0].Left.Down)
+        {
+            GameState->Camera.Position -= GameState->Camera.Right;
+        }
+        if (GameState->Players[0].Right.Down)
+        {
+            GameState->Camera.Position += GameState->Camera.Right;
+        }
+        
+        for (s64 I = 0; I < StepCount; ++I)
+        {
+            LogicUpdate(GameState, FullStep);
+        }
+        LogicUpdate(GameState, SmallStep);
         
         //Update stuff
         UpdateCamera(&GameState->Camera, GameState->MouseDeltaX, GameState->MouseDeltaY);
