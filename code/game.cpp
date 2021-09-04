@@ -158,7 +158,22 @@ static void AddEntity(world* World, vec3 Position, entity_types Type)
 
 static void LogicUpdate(game_state* GameState, r64 Timestep)
 {
-    
+    if (GameState->Players[0].Up.Down)
+    {
+        GameState->Camera.Position += GameState->Camera.Forward * (r32)Timestep;
+    }
+    if (GameState->Players[0].Down.Down)
+    {
+        GameState->Camera.Position -= GameState->Camera.Forward * (r32)Timestep;
+    }
+    if (GameState->Players[0].Left.Down)
+    {
+        GameState->Camera.Position -= GameState->Camera.Right * (r32)Timestep;
+    }
+    if (GameState->Players[0].Right.Down)
+    {
+        GameState->Camera.Position += GameState->Camera.Right * (r32)Timestep;
+    }
 }
 
 void RunGame()
@@ -233,23 +248,6 @@ void RunGame()
     {
         //Input pass
         HandleInput(GameState);
-        
-        if (GameState->Players[0].Up.Down)
-        {
-            GameState->Camera.Position += GameState->Camera.Forward;
-        }
-        if (GameState->Players[0].Down.Down)
-        {
-            GameState->Camera.Position -= GameState->Camera.Forward;
-        }
-        if (GameState->Players[0].Left.Down)
-        {
-            GameState->Camera.Position -= GameState->Camera.Right;
-        }
-        if (GameState->Players[0].Right.Down)
-        {
-            GameState->Camera.Position += GameState->Camera.Right;
-        }
         
         for (s64 I = 0; I < StepCount; ++I)
         {
