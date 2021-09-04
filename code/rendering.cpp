@@ -58,11 +58,20 @@ static void LoadBox(game_state* GameState)
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
+    
+    
+    glGenVertexArrays(1, &GameState->TerrainVAO);
+    glBindVertexArray(GameState->VAOBox);
+    
+    glGenBuffers(1, &GameState->TerrainVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, GameState->TerrainVBO);
+    MeshUpdateBuffers(&GameState->TerrainMesh, GameState->TerrainVAO, GameState->TerrainVBO);
 }
 
 static void LoadShaders(game_state* GameState)
 {
     GameState->ShaderBox = LoadAndCreateShaders(GameState, "assets/basic.vs", "assets/basic.fs");
+    GameState->TerrainShader = LoadAndCreateShaders(GameState, "assets/terrain.vs", "assets/terrain.fs");
 }
 
 static void Render(game_state* GameState, SDL_Window* Window)

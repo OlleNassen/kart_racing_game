@@ -7,6 +7,7 @@
 #include "common.h"
 #include "kart.h"
 #include "physics.h"
+#include "terrain.h"
 
 #define MAX_NUM_ENTITIES 1444
 
@@ -71,7 +72,12 @@ typedef struct game_state
     GLuint VAOBox;
     GLuint VBOBox;
     GLuint ShaderBox;
-    GLuint Padding1;
+    
+    GLuint TerrainVAO;
+    GLuint TerrainVBO;
+    GLuint TerrainShader;
+    mesh TerrainMesh;
+    
     mat4 MatrixProjection;
     mat4 MatrixView;
     camera Camera;

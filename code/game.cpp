@@ -1,5 +1,6 @@
 #include "game.h"
 #include "shader.cpp"
+#include "terrain.cpp"
 #include "rendering.cpp"
 #include "input.cpp"
 #include "parser.h"
