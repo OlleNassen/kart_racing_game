@@ -43,6 +43,38 @@ float VerticesCubePNT[] = {
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 };
 
+
+static unsigned int ImageTextureCreate(const char *Path)
+{
+    unsigned int Texture;
+    glGenTextures(1, &Texture);
+    glBindTexture(GL_TEXTURE_2D, Texture);
+    
+    stbi_set_flip_vertically_on_load(true);
+    
+    int Width, Height, NumComponents;
+    
+    unsigned char* Data = stbi_load(Path, &Width, &Height, &NumComponents, 4);
+    if (Data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width,
+                     Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data);
+        stbi_image_free(Data);
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+    else
+    {
+        printf("Could not load texture from path: %s\n", Path);
+    }
+    
+    return Texture;
+}
+
+
 static void LoadBox(game_state* GameState)
 {
     glGenVertexArrays(1, &GameState->VAOBox);
@@ -72,6 +104,7 @@ static void LoadBox(game_state* GameState)
     MeshHeightmapFromImage(&GameState->TerrainMesh, "assets/heightmap.png");
     MeshUpdateBuffers(&GameState->TerrainMesh, 
                       GameState->TerrainVAO, GameState->TerrainVBO, GameState->TerrainEBO);
+    GameState->TerrainTexture = ImageTextureCreate("assets/ice.png");
 }
 
 static void LoadShaders(game_state* GameState)
