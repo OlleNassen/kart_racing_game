@@ -6,20 +6,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "common.h"
 #include "kart.h"
+#include "physics.h"
 
 #define MAX_NUM_ENTITIES 1444
 
 static s32 GlobalWindowWidth = 1280;
 static s32 GlobalWindowHeight = 720;
 static b32 GlobalIsRunning = 1;
-
-typedef glm::vec3 vec3;
-typedef glm::mat4 mat4;
-
-using glm::lookAt;
-using glm::normalize;
-using glm::cross;
-using glm::dot;
 
 void GameRun();
 
@@ -57,14 +50,13 @@ typedef struct game_input
     game_button Pause;
 } game_input;
 
-
-
 typedef struct entity
 {
     entity_types Type;
     vec3 Position;
     vec3 Velocity;
     vec3 Acceleration;
+    obb Obb;
     kart Kart;
 }entity;
 

@@ -27,6 +27,15 @@ typedef uint32_t b32;
 typedef float r32;
 typedef double r64;
 
+using glm::vec3;
+using glm::mat4;
+using glm::mat3;
+
+using glm::lookAt;
+using glm::normalize;
+using glm::cross;
+using glm::dot;
+
 static const r32 Pi = 3.1415f;
 
 //Couldn't find this in cglm...

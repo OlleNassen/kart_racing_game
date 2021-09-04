@@ -3,6 +3,7 @@
 #include "rendering.cpp"
 #include "input.cpp"
 #include "parser.h"
+#include "physics.cpp"
 
 static game_options LoadOptions(const char* Path)
 {
@@ -83,6 +84,13 @@ static void AddEntity(world* World, vec3 Position, entity_types Type)
     Entity->Position[0] = Position[0];
     Entity->Position[1] = Position[1];
     Entity->Position[2] = Position[2];
+    
+    Entity->Obb.Origin = Position;
+    Entity->Obb.Axes[0] = vec3(1.f, 0.f, 0.f);
+    Entity->Obb.Axes[1] = vec3(0.f, 1.f, 0.f);
+    Entity->Obb.Axes[2] = vec3(0.f, 0.f, 1.f);
+    Entity->Obb.HalfWidths = vec3(0.5f);
+    
     Entity->Type = Type;
 }
 
@@ -144,11 +152,8 @@ void RunGame()
     GameState->Camera.Up[1] = 1.f;
     GameState->Camera.WorldUp[1] = 1.f;
     
-    vec3 EntityPosition = {0.f, 0.f, 0.f};
-    AddEntity(&GameState->World, EntityPosition, Kart);
-    
-    EntityPosition = {1.f, 1.f, 1.f};
-    AddEntity(&GameState->World, EntityPosition, Kart);
+    AddEntity(&GameState->World, vec3(0,0,0), Kart);
+    AddEntity(&GameState->World, vec3(0,1,0.9f), Kart);
     
     while(GlobalIsRunning)
     {
