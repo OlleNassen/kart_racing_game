@@ -123,7 +123,49 @@ static void MeshUpdateBuffers(mesh *Mesh, unsigned int VAO, unsigned int VBO, un
     
 }
 
+static float CatmullRom(float P0, float P1, float P2, float P3, float Amount)
+{
+    float T0 = Amount;
+    float T2 = Amount * Amount;
+    float T3 = Amount * Amount * Amount;
+    return 0.5f *((2 * P1) + (-P0 + P2) * T0 +
+                  (2*P0 - 5*P1 + 4*P2 - P3) * T2 +
+                  (-P0 + 3*P1- 3*P2 + P3) * T3);
+}
 
+static vec2 CatmullRom2D(const vec2& P0, const vec2& P1, const vec2& P2, const vec2& P3, float Amount)
+{
+    vec2 Result;
+    Result.x = CatmullRom(P0.x, P1.x, P2.x, P3.x, Amount);
+    Result.y = CatmullRom(P0.y, P1.y, P2.y, P3.y, Amount);
+    return Result;
+}
 
-
-
+struct curve
+{
+    s64 Count;
+    vec2 Points[256];
+    
+    void Push(vec2 NewPoint)
+    {
+        Points[Count++] = NewPoint;
+    }
+    
+    s64 GeneratePoints(s64 capacity, vec2* GeneratedListResult)
+    {
+        s64 ResultCount = 0;
+        
+        for(int I = 0; I < Count - 3; ++I)
+        {
+            vec2* P[4] = { Points + I, Points + I + 1, Points + I + 2, Points + I + 3 };
+            s64 LevelOfDetail = (int)(length(*P[1] - *P[2]));
+            
+            for(s64  J = 0; J < LevelOfDetail; ++J)
+            {
+                GeneratedListResult[ResultCount++] = CatmullRom2D(*P[0], *P[1], *P[2], *P[3], (float)J / (float)LevelOfDetail);
+            }
+        }
+        
+        return ResultCount;
+    }
+};

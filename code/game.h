@@ -78,6 +78,7 @@ typedef struct game_state
     GLuint TerrainEBO;
     GLuint TerrainShader;
     GLuint TerrainTexture;
+    GLuint TerrainTexture2;
     mesh TerrainMesh;
     
     mat4 MatrixProjection;

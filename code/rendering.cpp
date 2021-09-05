@@ -105,6 +105,7 @@ static void LoadBox(game_state* GameState)
     MeshUpdateBuffers(&GameState->TerrainMesh, 
                       GameState->TerrainVAO, GameState->TerrainVBO, GameState->TerrainEBO);
     GameState->TerrainTexture = ImageTextureCreate("assets/ice.png");
+    GameState->TerrainTexture2 = ImageTextureCreate("assets/dirt.png");
 }
 
 static void LoadShaders(game_state* GameState)
@@ -122,14 +123,37 @@ static void Render(game_state* GameState, SDL_Window* Window)
     
     
     {
+        curve Curve = {};
+        Curve.Push(vec2(0.0f, 0.0f));
+        Curve.Push(vec2(20.0f, 15.0f));
+        Curve.Push(vec2(50.0f, 50.0f));
+        Curve.Push(vec2(90.0f, 60.0f));
+        Curve.Push(vec2(110.0f, 70.0f));
+        Curve.Push(vec2(115.0f, 70.0f));
+        Curve.Push(vec2(120.0f, 80.0f));
+        Curve.Push(vec2(90.0f, 50.0f));
+        
+        vec2 Points[512] = {};
+        s64 Count = Curve.GeneratePoints(ArrayCount(Points), Points);
+        
         glUseProgram(GameState->TerrainShader);
+        
+        glUniform1i(5, (GLint)Count);
+        glUniform2fv(6, (GLsizei)Count, (float*)Points);
+        
         glUniformMatrix4fv(1, 1, GL_FALSE, &GameState->MatrixView[0][0]);
         glUniformMatrix4fv(2, 1, GL_FALSE, &GameState->MatrixProjection[0][0]);
         
         mat4 MatrixModel(1.f);
         glUniformMatrix4fv(0, 1, GL_FALSE, &MatrixModel[0][0]);
         
+        glActiveTexture(GL_TEXTURE0);
+        glUniform1i(3, 0);
         glBindTexture(GL_TEXTURE_2D, GameState->TerrainTexture);
+        
+        glActiveTexture(GL_TEXTURE1);
+        glUniform1i(4, 1);
+        glBindTexture(GL_TEXTURE_2D, GameState->TerrainTexture2);
         
         glBindVertexArray(GameState->TerrainVAO);
         glDrawElements(GL_TRIANGLES, GameState->TerrainMesh.NumIndices, GL_UNSIGNED_INT, 0);
