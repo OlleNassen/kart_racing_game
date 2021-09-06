@@ -292,5 +292,6 @@ static void ResolvePhysics(world* World)
         Entity.first->Obb.Origin.y += 10.f;
     }
     
+    World->ThrowAwayNumEntities = 0;
     *World->CollisionMap = {};
 }
