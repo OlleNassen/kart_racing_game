@@ -51,13 +51,17 @@ typedef struct game_input
     game_button Pause;
 } game_input;
 
+enum physics_type {PhysObb, PhysTriangle};
+
 typedef struct entity
 {
     entity_types Type;
+    physics_type BodyType;
     vec3 Position;
     vec3 Velocity;
     vec3 Acceleration;
     obb Obb;
+    triangle_vertices Triangle;
     kart_type Kart;
 }entity;
 
@@ -65,6 +69,8 @@ typedef struct entity
 typedef struct world
 {
     std::unordered_map<entity*, entity*>* CollisionMap;
+    entity TriangleThrowaways[MAX_NUM_ENTITIES];
+    u32 ThrowAwayNumEntities;
     entity Entities[MAX_NUM_ENTITIES];
     u32 CurrentNumEntities;
 }world;
@@ -101,5 +107,28 @@ typedef struct game_options
     s64 ResY;
     s64 FPS;
 } game_options;
+
+static void AddThrowawayEntity(world* World, triangle_vertices* Triangle, entity_types Type)
+{
+    Assert(World->ThrowAwayNumEntities < MAX_NUM_ENTITIES);
+    
+    entity* Entity = &World->TriangleThrowaways[World->ThrowAwayNumEntities++];
+    Entity->Triangle = *Triangle;
+    Entity->Type = Type;
+}
+
+static void AddEntity(world* World, vec3 Position, entity_types Type)
+{
+    Assert(World->CurrentNumEntities < MAX_NUM_ENTITIES);
+    
+    entity* Entity = &World->Entities[World->CurrentNumEntities++];
+    Entity->Position = Position;
+    
+    Entity->Obb.Origin = Position;
+    Entity->Obb.Axes = mat3(1.f);
+    Entity->Obb.HalfWidths = vec3(0.5f);
+    
+    Entity->Type = Type;
+}
 
 #endif //GAME_H

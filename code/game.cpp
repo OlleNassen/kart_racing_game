@@ -138,20 +138,6 @@ static void UpdateCamera(camera* Camera, s32 DeltaMouseX, s32 DeltaMouseY)
     Camera->Up = normalize(Camera->Up);
 }
 
-static void AddEntity(world* World, vec3 Position, entity_types Type)
-{
-    Assert(World->CurrentNumEntities < MAX_NUM_ENTITIES);
-    
-    entity* Entity = &World->Entities[World->CurrentNumEntities++];
-    Entity->Position = Position;
-    
-    Entity->Obb.Origin = Position;
-    Entity->Obb.Axes = mat3(1.f);
-    Entity->Obb.HalfWidths = vec3(0.5f);
-    
-    Entity->Type = Type;
-}
-
 static void LogicUpdate(game_state* GameState, r64 Timestep)
 {
     if (GameState->Players[0].Up.Down)
@@ -172,8 +158,8 @@ static void LogicUpdate(game_state* GameState, r64 Timestep)
     }
     if (GameState->Players[0].Select.Down)
     {
-        GameState->World.Entities[0].Position.x += 0.1f * (r32)Timestep;
-        GameState->World.Entities[0].Obb.Origin.x += 0.1f * (r32)Timestep;
+        GameState->World.Entities[3].Position.y -= 0.1f * (r32)Timestep;
+        GameState->World.Entities[3].Obb.Origin.y -= 0.1f * (r32)Timestep;
     }
 }
 
@@ -203,6 +189,7 @@ void RunGame()
     SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 8 );
     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 8 );
     SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 8 );
+    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
     
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
@@ -216,10 +203,10 @@ void RunGame()
     // Load GL extensions using glad
     if (gladLoadGL())
     {
-        //glEnable(GL_DEPTH_TEST);
-        //glDepthFunc(GL_LEQUAL);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
         //glDisable(GL_CULL_FACE);
-        //glEnable(GL_BLEND);
+        glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
     else
@@ -233,7 +220,7 @@ void RunGame()
     
     GameState->MatrixProjection = glm::perspective(Pi / 4, 16.0f / 9.0f, 0.01f, 1000.0f);
     
-    GameState->Camera.Yaw = -90.f;
+    GameState->Camera.Yaw = 90.f;
     GameState->Camera.Position[2] = 4.f;
     GameState->Camera.Forward[2] = -1.f;
     GameState->Camera.Right[0] = 1.f;
@@ -261,7 +248,7 @@ void RunGame()
         }
         LogicUpdate(GameState, SmallStep);
         
-        PhysicsBroadphase(&GameState->World);
+        PhysicsBroadphase(&GameState->World, &GameState->TerrainMesh);
         ResolvePhysics(&GameState->World);
         
         //Update stuff

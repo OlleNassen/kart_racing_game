@@ -51,6 +51,11 @@ static vec3 TriangleFurthestPointAway(triangle_vertices* TriangleVertices, vec3 
     return TriangleVertices->Positions[VertexFurthestAwayIndex];
 }
 
+static vec3 SupportTriangle(obb_vertices* A, triangle_vertices* B, vec3 Direction)
+{
+    return ObbFurthestPointAway(A, Direction) - TriangleFurthestPointAway(B, -Direction);
+}
+
 static b32 LineCase(simplex* Simplex, vec3& Direction)
 {
     vec3 A = Simplex->PointList[0];
@@ -192,7 +197,29 @@ static b32 GJK(entity* A, entity* B)
     }
 }
 
-static void PhysicsBroadphase(world* World)
+static b32 GJK(entity* A, triangle_vertices* B)
+{
+    obb_vertices Shape0Vertices = FindAllVertices(&A->Obb);
+    
+    vec3 Direction = normalize(vec3(1,1,1));
+    simplex Simplex = {};
+    vec3 FirstPoint = SupportTriangle(&Shape0Vertices, B, Direction);
+    Simplex.InsertFront(FirstPoint);
+    Direction = vec3(0,0,0) - FirstPoint;
+    while(true)
+    {
+        vec3 NewPoint = SupportTriangle(&Shape0Vertices, B, Direction);
+        if(dot(NewPoint, Direction) < 0.f)
+            return false;
+        Simplex.InsertFront(NewPoint);
+        if(HandleSimplex(&Simplex, Direction))
+        {
+            return true;
+        }
+    }
+}
+
+static void PhysicsBroadphase(world* World, mesh* TerrainMesh)
 {
     for(u32 EntityIndex = 0; EntityIndex < World->CurrentNumEntities; ++EntityIndex)
     {
@@ -208,14 +235,61 @@ static void PhysicsBroadphase(world* World)
             }
         }
     }
+    
+    //Test against heightmap
+    for(u32 EntityIndex = 0; EntityIndex < World->CurrentNumEntities; ++EntityIndex)
+    {
+        entity* Entity = &World->Entities[EntityIndex];
+        
+        vec3 MinDirection = normalize(vec3(-1, -1, -1));
+        vec3 MaxDirection = normalize(vec3(1,1,1));
+        
+        obb_vertices EntityVertices = FindAllVertices(&Entity->Obb);
+        
+        vec3 EntityMinPosition = ObbFurthestPointAway(&EntityVertices, MinDirection);
+        vec3 EntityMaxPosition = ObbFurthestPointAway(&EntityVertices, MaxDirection);
+        
+        for(s32 X = (s32)EntityMinPosition.x; X < (s32)EntityMaxPosition.x; ++X)
+        {
+            for(s32 Z = (s32)EntityMinPosition.z; Z < (s32)EntityMaxPosition.z; ++Z)
+            {
+                s32 Width = 256;
+                
+                s32 Corners[4];
+                Corners[0] = (X + 0) + (Z + 0) * Width;
+                Corners[1] = (X + 0) + (Z + 1) * Width;
+                Corners[2] = (X + 1) + (Z + 0) * Width;
+                Corners[3] = (X + 1) + (Z + 1) * Width;
+                
+                vec3 A = TerrainMesh->Vertices[Corners[0]];
+                vec3 B = TerrainMesh->Vertices[Corners[1]];
+                vec3 C = TerrainMesh->Vertices[Corners[2]];
+                vec3 D = TerrainMesh->Vertices[Corners[3]];
+                
+                triangle_vertices TriangleA = {A, B, D};
+                triangle_vertices TriangleB = {D, C, A};
+                
+                if(GJK(Entity, &TriangleA))
+                {
+                    AddThrowawayEntity(World, &TriangleA, Triangle);
+                    (*World->CollisionMap)[Entity] = &World->TriangleThrowaways[World->ThrowAwayNumEntities];
+                }
+                if(GJK(Entity, &TriangleB))
+                {
+                    AddThrowawayEntity(World, &TriangleB, Triangle);
+                    (*World->CollisionMap)[Entity] = &World->TriangleThrowaways[World->ThrowAwayNumEntities];
+                }
+            }
+        }
+    }
 }
 
 static void ResolvePhysics(world* World)
 {
     for(auto& Entity : *World->CollisionMap)
     {
-        Entity.first->Position.y += 0.1f;
-        Entity.first->Obb.Origin.y += 0.1f;
+        Entity.first->Position.y += 10.f;
+        Entity.first->Obb.Origin.y += 10.f;
     }
     
     *World->CollisionMap = {};

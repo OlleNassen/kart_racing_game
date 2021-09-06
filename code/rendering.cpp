@@ -116,8 +116,8 @@ static void LoadShaders(game_state* GameState)
 
 static void Render(game_state* GameState, SDL_Window* Window)
 {
-    glClearColor(1.0f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.75f, 0.9f, 0.8f, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     GameState->MatrixView = glm::lookAt(GameState->Camera.Position, GameState->Camera.Position + GameState->Camera.Forward, GameState->Camera.Up);
     
