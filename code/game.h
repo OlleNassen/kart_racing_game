@@ -9,7 +9,7 @@
 #include "physics.h"
 #include "terrain.h"
 
-#define MAX_NUM_ENTITIES 1444
+#define MAX_NUM_ENTITIES 1000
 
 static s32 GlobalWindowWidth = 1280;
 static s32 GlobalWindowHeight = 720;
@@ -29,7 +29,7 @@ typedef struct camera
     r32 Yaw;
 }camera;
 
-typedef enum entity_types{Kart, Tree, Cloud}entity_types;
+typedef enum entity_types{Kart, Triangle, Tree, Cloud}entity_types;
 
 typedef struct game_button
 {
@@ -61,8 +61,10 @@ typedef struct entity
     kart_type Kart;
 }entity;
 
+#include <unordered_map>
 typedef struct world
 {
+    std::unordered_map<entity*, entity*>* CollisionMap;
     entity Entities[MAX_NUM_ENTITIES];
     u32 CurrentNumEntities;
 }world;

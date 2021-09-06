@@ -143,14 +143,10 @@ static void AddEntity(world* World, vec3 Position, entity_types Type)
     Assert(World->CurrentNumEntities < MAX_NUM_ENTITIES);
     
     entity* Entity = &World->Entities[World->CurrentNumEntities++];
-    Entity->Position[0] = Position[0];
-    Entity->Position[1] = Position[1];
-    Entity->Position[2] = Position[2];
+    Entity->Position = Position;
     
     Entity->Obb.Origin = Position;
-    Entity->Obb.Axes[0] = vec3(1.f, 0.f, 0.f);
-    Entity->Obb.Axes[1] = vec3(0.f, 1.f, 0.f);
-    Entity->Obb.Axes[2] = vec3(0.f, 0.f, 1.f);
+    Entity->Obb.Axes = mat3(1.f);
     Entity->Obb.HalfWidths = vec3(0.5f);
     
     Entity->Type = Type;
@@ -174,6 +170,11 @@ static void LogicUpdate(game_state* GameState, r64 Timestep)
     {
         GameState->Camera.Position += GameState->Camera.Right * (r32)Timestep;
     }
+    if (GameState->Players[0].Select.Down)
+    {
+        GameState->World.Entities[0].Position.x += 0.1f * (r32)Timestep;
+        GameState->World.Entities[0].Obb.Origin.x += 0.1f * (r32)Timestep;
+    }
 }
 
 void RunGame()
@@ -184,6 +185,9 @@ void RunGame()
         printf("Failed to allocate memory\n");
         exit(1);
     }
+    
+    std::unordered_map<entity*, entity*> CollisionMap;
+    GameState->World.CollisionMap = &CollisionMap;
     
     game_options Options = LoadOptions("assets/options.ini");
     
@@ -236,8 +240,10 @@ void RunGame()
     GameState->Camera.Up[1] = 1.f;
     GameState->Camera.WorldUp[1] = 1.f;
     
-    AddEntity(&GameState->World, vec3(0,0,0), Kart);
-    AddEntity(&GameState->World, vec3(0,1,0.9f), Kart);
+    for(s32 EntityIndex = 0; EntityIndex < MAX_NUM_ENTITIES / 10; ++EntityIndex)
+    {
+        AddEntity(&GameState->World, vec3((r32)EntityIndex * 1.5F,40.f,25.f), Kart);
+    }
     
     const s64 LogicUpdateCount = 480;
     const s64 StepCount = LogicUpdateCount / Options.FPS;
@@ -254,6 +260,9 @@ void RunGame()
             LogicUpdate(GameState, FullStep);
         }
         LogicUpdate(GameState, SmallStep);
+        
+        PhysicsBroadphase(&GameState->World);
+        ResolvePhysics(&GameState->World);
         
         //Update stuff
         UpdateCamera(&GameState->Camera, GameState->MouseDeltaX, GameState->MouseDeltaY);

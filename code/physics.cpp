@@ -35,6 +35,22 @@ static vec3 SupportObb(obb_vertices* A, obb_vertices* B, vec3 Direction)
     return ObbFurthestPointAway(A, Direction) - ObbFurthestPointAway(B, -Direction);
 }
 
+static vec3 TriangleFurthestPointAway(triangle_vertices* TriangleVertices, vec3 Direction)
+{
+    s32 VertexFurthestAwayIndex = 0;
+    r32 VertexFurthestAwayDistance = dot(TriangleVertices->Positions[0], Direction);
+    for(s32 VertexIndex = 1; VertexIndex < 3; ++VertexIndex)
+    {
+        r32 CurrentVertexDistance = dot(TriangleVertices->Positions[VertexIndex], Direction);
+        if(CurrentVertexDistance > VertexFurthestAwayDistance)
+        {
+            VertexFurthestAwayDistance = CurrentVertexDistance;
+            VertexFurthestAwayIndex = VertexIndex;
+        }
+    }
+    return TriangleVertices->Positions[VertexFurthestAwayIndex];
+}
+
 static b32 LineCase(simplex* Simplex, vec3& Direction)
 {
     vec3 A = Simplex->PointList[0];
@@ -174,4 +190,33 @@ static b32 GJK(entity* A, entity* B)
             return true;
         }
     }
+}
+
+static void PhysicsBroadphase(world* World)
+{
+    for(u32 EntityIndex = 0; EntityIndex < World->CurrentNumEntities; ++EntityIndex)
+    {
+        entity* Entity0 = &World->Entities[EntityIndex];
+        for(u32 ComparedIndex = EntityIndex + 1; ComparedIndex < World->CurrentNumEntities; ++ComparedIndex)
+        {
+            entity* Entity1 = &World->Entities[ComparedIndex];
+            
+            if(GJK(Entity0, Entity1))
+            {
+                (*World->CollisionMap)[Entity0] = Entity1;
+                (*World->CollisionMap)[Entity1] = Entity0;
+            }
+        }
+    }
+}
+
+static void ResolvePhysics(world* World)
+{
+    for(auto& Entity : *World->CollisionMap)
+    {
+        Entity.first->Position.y += 0.1f;
+        Entity.first->Obb.Origin.y += 0.1f;
+    }
+    
+    *World->CollisionMap = {};
 }

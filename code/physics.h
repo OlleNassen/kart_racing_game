@@ -14,6 +14,11 @@ typedef struct obb
     vec3 HalfWidths; // Positive halfwidth extents of OBB along each axis
 }obb;
 
+struct triangle_vertices
+{
+    vec3 Positions[3];
+};
+
 struct simplex
 {
     void InsertFront(vec3 NewPoint)
