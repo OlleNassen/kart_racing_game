@@ -272,12 +272,12 @@ static void PhysicsBroadphase(world* World, mesh* TerrainMesh)
                 if(GJK(Entity, &TriangleA))
                 {
                     AddThrowawayEntity(World, &TriangleA, Triangle);
-                    (*World->CollisionMap)[Entity] = &World->TriangleThrowaways[World->ThrowAwayNumEntities];
+                    (*World->CollisionMap)[Entity] = &World->TriangleThrowaways[World->ThrowAwayNumEntities - 1];
                 }
                 if(GJK(Entity, &TriangleB))
                 {
                     AddThrowawayEntity(World, &TriangleB, Triangle);
-                    (*World->CollisionMap)[Entity] = &World->TriangleThrowaways[World->ThrowAwayNumEntities];
+                    (*World->CollisionMap)[Entity] = &World->TriangleThrowaways[World->ThrowAwayNumEntities - 1];
                 }
             }
         }
