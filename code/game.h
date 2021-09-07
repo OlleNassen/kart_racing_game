@@ -75,6 +75,20 @@ typedef struct world
     u32 CurrentNumEntities;
 }world;
 
+
+struct scene
+{
+    s32 NumVAOs;
+    s32 NumVBOs;
+    s32 NumEBOs;
+    
+    GLuint VAOs[16];
+    GLuint VBOs[16];
+    GLuint EBOs[16];
+    GLuint NumIndices[16];
+};
+
+
 typedef struct game_state
 {
     GLuint VAOBox;
@@ -87,6 +101,9 @@ typedef struct game_state
     GLuint TerrainShader;
     GLuint TerrainTexture;
     GLuint TerrainTexture2;
+    
+    scene Scene;
+    
     mesh TerrainMesh;
     
     mat4 MatrixProjection;

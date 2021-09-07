@@ -121,7 +121,6 @@ static void Render(game_state* GameState, SDL_Window* Window)
     
     GameState->MatrixView = glm::lookAt(GameState->Camera.Position, GameState->Camera.Position + GameState->Camera.Forward, GameState->Camera.Up);
     
-    
     {
         curve Curve = {};
         Curve.Push(vec2(0.0f, 0.0f));
@@ -182,6 +181,13 @@ static void Render(game_state* GameState, SDL_Window* Window)
             glBindVertexArray(0);
             break;
         }
+    }
+    
+    {
+        mat4 MatrixModel(1.f);
+        glUniformMatrix4fv(0, 1, GL_FALSE, &MatrixModel[0][0]);
+        glBindVertexArray(GameState->Scene.VAOs[0]);
+        glDrawElements(GL_TRIANGLES, GameState->Scene.NumIndices[0], GL_UNSIGNED_SHORT, 0);
     }
     
     SDL_GL_SwapWindow(Window);

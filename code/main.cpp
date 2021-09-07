@@ -1,5 +1,5 @@
-#define CGLTF_IMPLEMENTATION
-#include "cgltf.h"
+#define JSMN_STATIC
+#include "jsmn.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"

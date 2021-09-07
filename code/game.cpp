@@ -6,61 +6,208 @@
 #include "parser.h"
 #include "physics.cpp"
 
-static void LoadScene(const char* Path)
+struct buffer_view
 {
-    cgltf_options Options = {0};
-    cgltf_data* Data = 0;
-    cgltf_result Result = cgltf_parse_file(&Options, Path, &Data);
-    
-    if (Result == cgltf_result_success)
-    {
-        /* TODO make awesome stuff */
-        
-        for (s64 I = 0; I < (s64)Data->meshes_count; ++I)
+    s32 Buffer;
+    s32 ByteLength;
+    s32 ByteOffset;
+};
+
+struct buffer
+{
+    s32 ByteLength;
+    char* Uri;
+    int UriLength;
+    u8* Data;
+};
+
+
+s64 ToInt64(const char* Str, s64 Length)
+{
+    s64 sign = 1;
+    s64 result = 0;
+	for (s64 i = 0; i < Length; ++i)
+	{
+		if (Str[i] != '-')
         {
-            cgltf_mesh* Mesh = Data->meshes + I;
+            result = result * 10 + (Str[i] - '0');
+        }
+        else if (result == 0 && Str[i] == '-')
+        {
+            sign = -1;
+        }
+        else
+        {
+            break;
+        }
+        
+	}
+    result *= sign;
+	return result;
+}
+
+
+static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
+    if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start &&
+        strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
+        return 0;
+    }
+    return -1;
+}
+
+static scene LoadScene(const char* Path)
+{
+    FILE* File = 0;
+    File = fopen(Path, "r");
+    if(!File)
+    {
+        printf("Failed to open path: %s", Path);
+    }
+    
+    fseek (File , 0 , SEEK_END);
+    long FileSize = ftell(File);
+    rewind (File);
+    
+    char JsonString[10000] = {0};
+    fread(JsonString, 1, FileSize, File);
+    fclose(File);
+    
+    jsmn_parser Parser;
+    jsmntok_t Tokens[1024];
+    
+    jsmn_init(&Parser);
+    int Count = jsmn_parse(&Parser, JsonString, FileSize, Tokens, ArrayCount(Tokens));
+    if (Count < 0)
+    {
+        printf("Failed to parse JSON: %d\n", Count);
+    }
+    
+    buffer_view BufferViews[4] = {};
+    int ActiveBufferView = 0;
+    
+    buffer Buffers[4] = {};
+    int ActiveBuffer = 0;
+    
+    for (int I = 0; I < Count; ++I)
+    {
+        if (jsoneq(JsonString, Tokens + I, "bufferViews") == 0) 
+        {
+            jsmntok_t ArrayToken = Tokens[I + 1];
             
-            for (s64 J = 0; J < (s64)Mesh->primitives_count; ++J)
+            int Index = I + 1; 
+            while (Tokens[Index].start < ArrayToken.end)
             {
-                cgltf_primitive* Primitive = Mesh->primitives + J;
-                
-                for (s64 K = 0; K < (s64)Primitive->attributes_count; ++K)
+                if (jsoneq(JsonString, Tokens + Index, "buffer") == 0)
                 {
-                    cgltf_attribute* Attribute = Primitive->attributes + K;
-                    cgltf_accessor* Accessor = Attribute->data;
-                    cgltf_buffer_view* BufferView = Accessor->buffer_view;
-                    s64 BufferSize = BufferView->size;
-                    cgltf_buffer* Buffer = BufferView->buffer;
-                    
-                    switch (Attribute->type)
-                    {
-                        case cgltf_attribute_type_position:
-                        {
-                            
-                            
-                            break;
-                        }
-                        case cgltf_attribute_type_normal:
-                        {
-                            break;
-                        }
-                    }
-                }
-                
-                {
-                    cgltf_accessor* Accessor = Primitive->indices;
-                    cgltf_buffer_view* BufferView = Accessor->buffer_view;
-                    s64 BufferSize = BufferView->size;
-                    cgltf_buffer* Buffer = BufferView->buffer;
+                    ++Index;
+                    BufferViews[ActiveBufferView].Buffer = (s32)ToInt64(JsonString + Tokens[Index].start, Tokens[Index].end - Tokens[Index].start);
                     
                 }
+                else if (jsoneq(JsonString, Tokens + Index, "byteLength") == 0)
+                {
+                    ++Index;
+                    BufferViews[ActiveBufferView].ByteLength = (s32)ToInt64(JsonString + Tokens[Index].start, Tokens[Index].end - Tokens[Index].start);
+                }
+                else if (jsoneq(JsonString, Tokens + Index, "byteOffset") == 0)
+                {
+                    ++Index;
+                    BufferViews[ActiveBufferView].ByteOffset = (s32)ToInt64(JsonString + Tokens[Index].start, Tokens[Index].end - Tokens[Index].start);
+                    ++ActiveBufferView;
+                }
+                
+                ++Index;
             }
+            I = Index - 1;
+        }
+        else if (jsoneq(JsonString, Tokens + I, "buffers") == 0)
+        {
+            jsmntok_t ArrayToken = Tokens[I + 1];
             
-            
-            
-            cgltf_free(Data);
+            int Index = I + 1; 
+            while (Tokens[Index].start < ArrayToken.end)
+            {
+                if (jsoneq(JsonString, Tokens + Index, "byteLength") == 0)
+                {
+                    ++Index;
+                    Buffers[ActiveBuffer].ByteLength = (s32)ToInt64(JsonString + Tokens[Index].start, Tokens[Index].end - Tokens[Index].start);
+                    
+                }
+                else if (jsoneq(JsonString, Tokens + Index, "uri") == 0)
+                {
+                    ++Index;
+                    Buffers[ActiveBuffer].Uri = JsonString + Tokens[Index].start;
+                    Buffers[ActiveBuffer].UriLength = Tokens[Index].end - Tokens[Index].start;
+                    ++ActiveBuffer;
+                }
+                
+                
+                ++Index;
+            }
+            I = Index;
         }
     }
+    
+    scene Scene = {};
+    
+    for (int I = 0; I < ActiveBuffer; ++I)
+    {
+        buffer* Buffer = Buffers + I;
+        
+        char TempString[128] = {"assets/"};
+        for (int J = 0; J < Buffer->UriLength; ++J)
+        {
+            TempString[7 + J] = Buffer->Uri[J];
+        }
+        
+        FILE* TempFile = 0;
+        TempFile = fopen(TempString, "r");
+        if(!TempFile)
+        {
+            printf("Failed to open path: %s", Buffer->Uri);
+        }
+        
+        Buffers->Data = (u8*)malloc(Buffer->ByteLength);
+        
+        fread(Buffers->Data, 1, Buffer->ByteLength, TempFile);
+        fclose(TempFile);
+        
+        GLuint VAO;
+        GLuint VBO;
+        GLuint EBO;
+        
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+        
+        int NumIndices = BufferViews[3].ByteLength / sizeof(unsigned short);
+        
+        glGenBuffers(1, &EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, BufferViews[3].ByteLength, Buffer->Data + BufferViews[3].ByteOffset, GL_STATIC_DRAW);
+        
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, BufferViews[3].ByteOffset, Buffer->Data, GL_STATIC_DRAW);
+        
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)(s64)BufferViews[0].ByteOffset);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)(s64)BufferViews[1].ByteOffset);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vec2), (void*)(s64)BufferViews[2].ByteOffset);
+        
+        Scene.VAOs[I] = VAO;
+        Scene.VBOs[I] = VBO;
+        Scene.EBOs[I] = EBO;
+        Scene.NumIndices[I] = NumIndices;
+    }
+    
+    
+    
+    
+    
+    
+    return Scene;
 }
 
 static game_options LoadOptions(const char* Path)
@@ -177,8 +324,6 @@ void RunGame()
     
     game_options Options = LoadOptions("assets/options.ini");
     
-    LoadScene("assets/scene.glb");
-    
     GlobalWindowWidth = (s32)Options.ResX;
     GlobalWindowHeight = (s32)Options.ResY;
     
@@ -215,6 +360,7 @@ void RunGame()
         exit(1);
     }
     
+    GameState->Scene = LoadScene("assets/scene.gltf");
     LoadBox(GameState);
     LoadShaders(GameState);
     
